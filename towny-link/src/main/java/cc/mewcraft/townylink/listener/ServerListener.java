@@ -5,17 +5,14 @@ import cc.mewcraft.mewcore.util.UtilComponent;
 import cc.mewcraft.townylink.TownyLink;
 import cc.mewcraft.townylink.messager.Action;
 import cc.mewcraft.townylink.messager.Messenger;
+import cc.mewcraft.townylink.util.TownyUtils;
 import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.palmergames.bukkit.towny.TownyAPI;
-import com.palmergames.bukkit.towny.object.Nation;
-import com.palmergames.bukkit.towny.object.Town;
+import me.lucko.helper.Schedulers;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.server.ServerLoadEvent;
 
-import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-@Singleton
 public class ServerListener implements AutoCloseableListener {
 
     private final TownyLink plugin;
@@ -30,15 +27,18 @@ public class ServerListener implements AutoCloseableListener {
     @EventHandler
     public void onServerStart(ServerLoadEvent event) {
 
+        if (event.getType() != ServerLoadEvent.LoadType.STARTUP)
+            return;
+
         this.plugin.getComponentLogger().info(
             UtilComponent.asComponent("<aqua>Sending town and nation names to other servers...")
         );
 
-        List<String> townNames = TownyAPI.getInstance().getTowns().stream().map(Town::getName).toList();
-        this.messenger.sendMessage(Action.ADD_TOWN, townNames);
-
-        List<String> nationNames = TownyAPI.getInstance().getNations().stream().map(Nation::getName).toList();
-        this.messenger.sendMessage(Action.ADD_NATION, nationNames);
+        Schedulers.async().runLater(() -> {
+            this.messenger.fetch();
+            this.messenger.sendMessage(Action.ADD_TOWN, TownyUtils.getAllTowns());
+            this.messenger.sendMessage(Action.ADD_NATION, TownyUtils.getALlNations());
+        }, 5, TimeUnit.SECONDS);
 
         this.plugin.getComponentLogger().info(
             UtilComponent.asComponent("<aqua>Sending completed!")

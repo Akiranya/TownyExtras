@@ -2,14 +2,12 @@ package cc.mewcraft.townylink.object;
 
 import cc.mewcraft.townylink.TownyLink;
 import com.google.inject.Inject;
-import com.google.inject.Singleton;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-@Singleton
 public class TownyRepository {
 
     private final TownyLink plugin;
@@ -24,9 +22,7 @@ public class TownyRepository {
     }
 
     public void addTown(final String name) {
-        if (!this.townNames.add(name.toLowerCase(Locale.ROOT))) {
-            this.plugin.getLogger().warning("Trying to add a duplicate town name (%s) to repository".formatted(name));
-        }
+        this.townNames.add(name.toLowerCase(Locale.ROOT));
     }
 
     public void addAllTowns(final List<String> townNames) {
@@ -42,9 +38,7 @@ public class TownyRepository {
     }
 
     public void addNation(final String name) {
-        if (!this.nationNames.add(name.toLowerCase(Locale.ROOT))) {
-            this.plugin.getLogger().warning("Trying to add a duplicate nation name (%s) to repository".formatted(name));
-        }
+        this.nationNames.add(name.toLowerCase(Locale.ROOT));
     }
 
     public void addAllNations(final List<String> nationNames) {

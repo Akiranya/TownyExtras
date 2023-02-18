@@ -6,13 +6,11 @@ import cc.mewcraft.townylink.messager.Action;
 import cc.mewcraft.townylink.messager.Messenger;
 import cc.mewcraft.townylink.object.TownyRepository;
 import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import com.palmergames.bukkit.towny.event.*;
 import com.palmergames.bukkit.towny.event.nation.PreNewNationEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 
-@Singleton
 public class TownyListener implements AutoCloseableListener {
 
     private final TownyLink plugin;

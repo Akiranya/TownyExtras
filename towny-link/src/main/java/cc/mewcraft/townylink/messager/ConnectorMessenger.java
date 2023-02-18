@@ -2,11 +2,11 @@ package cc.mewcraft.townylink.messager;
 
 import cc.mewcraft.townylink.TownyLink;
 import cc.mewcraft.townylink.object.TownyRepository;
+import cc.mewcraft.townylink.util.TownyUtils;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import de.themoep.connectorplugin.bukkit.BukkitConnectorPlugin;
 import de.themoep.connectorplugin.connector.ConnectingPlugin;
 import de.themoep.connectorplugin.connector.Message;
@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
 
-@Singleton
 @SuppressWarnings("UnstableApiUsage")
 public class ConnectorMessenger implements Messenger, Terminable {
 
@@ -36,6 +35,8 @@ public class ConnectorMessenger implements Messenger, Terminable {
         final BukkitConnectorPlugin connectorPlugin
     ) {
         this.plugin = plugin;
+        plugin.bind(this);
+
         this.repository = repository;
         this.connectorPlugin = connectorPlugin;
         Schedulers.bukkit().runTask(plugin, this::registerHandlers); // Will run after "Done!"
@@ -50,21 +51,31 @@ public class ConnectorMessenger implements Messenger, Terminable {
             this.repository.addAllTowns(townNames);
             reportReceived(Action.ADD_TOWN, townNames);
         });
-        registerHandler(Action.DELETE_TOWN, (player, message) -> {
-            List<String> townNames = readNames(message.getData());
-            this.repository.removeAllTowns(townNames);
-            reportReceived(Action.DELETE_TOWN, townNames);
-        });
         registerHandler(Action.ADD_NATION, (player, message) -> {
             List<String> nationNames = readNames(message.getData());
             this.repository.addAllNations(nationNames);
             reportReceived(Action.ADD_NATION, nationNames);
+        });
+        registerHandler(Action.DELETE_TOWN, (player, message) -> {
+            List<String> townNames = readNames(message.getData());
+            this.repository.removeAllTowns(townNames);
+            reportReceived(Action.DELETE_TOWN, townNames);
         });
         registerHandler(Action.DELETE_NATION, (player, message) -> {
             List<String> nationNames = readNames(message.getData());
             this.repository.removeAllNations(nationNames);
             reportReceived(Action.DELETE_NATION, nationNames);
         });
+        registerHandler(Action.FETCH, (player, message) -> {
+            String source = message.getSendingServer();
+            sendData(Action.ADD_TOWN, MessageTarget.SERVER, source, writeNames(TownyUtils.getAllTowns()));
+            sendData(Action.ADD_NATION, MessageTarget.SERVER, source, writeNames(TownyUtils.getALlNations()));
+        });
+    }
+
+    @Override public void fetch() {
+        sendData(Action.FETCH, MessageTarget.OTHERS_QUEUE, new byte[0]);
+        this.plugin.getLogger().info("Sent Message | Action: %s".formatted(Action.FETCH));
     }
 
     @Override public void sendMessage(String action, List<String> names) {
@@ -117,13 +128,13 @@ public class ConnectorMessenger implements Messenger, Terminable {
 
     private void reportReceived(String action, List<String> names) {
         this.plugin.getLogger().info(
-            "Received - %s : %s".formatted(action, names.stream().reduce((a, b) -> a + ", " + b).orElse(""))
+            "Received Message | Action: %s | Data: %s".formatted(action, names.stream().reduce((a, b) -> a + ", " + b).orElse(""))
         );
     }
 
     private void reportSent(String action, List<String> names) {
         this.plugin.getLogger().info(
-            "Sent - %s : %s".formatted(action, names.stream().reduce((a, b) -> a + ", " + b).orElse(""))
+            "Sent Message | Action: %s | Data: %s".formatted(action, names.stream().reduce((a, b) -> a + ", " + b).orElse(""))
         );
     }
 

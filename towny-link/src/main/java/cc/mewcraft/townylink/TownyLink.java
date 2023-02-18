@@ -14,6 +14,7 @@ import cc.mewcraft.townylink.object.TownyRepository;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Scopes;
 import de.themoep.connectorplugin.bukkit.BukkitConnectorPlugin;
 import me.lucko.helper.plugin.ExtendedJavaPlugin;
 import org.bukkit.plugin.Plugin;
@@ -36,23 +37,7 @@ public class TownyLink extends ExtendedJavaPlugin {
         this.config = new LinkConfig(this);
         this.translations = new Translations(this);
 
-        Injector injector = Guice.createInjector(new AbstractModule() {
-            @Override protected void configure() {
-                bind(TownyLink.class).toInstance(TownyLink.this);
-
-                Plugin connectorPlugin = getServer().getPluginManager().getPlugin("ConnectorPlugin");
-                if (connectorPlugin == null) {
-                    bind(Messenger.class).to(DummyMessenger.class);
-                } else {
-                    bind(Messenger.class).to(ConnectorMessenger.class);
-                    bind(BukkitConnectorPlugin.class).toInstance((BukkitConnectorPlugin) connectorPlugin);
-                }
-
-                bind(TownyRepository.class).toProvider(TownyRepositoryProvider.class);
-                bind(ServerListener.class).toProvider(ServerListenerProvider.class);
-                bind(TownyListener.class).toProvider(TownyListenerProvider.class);
-            }
-        });
+        Injector injector = Guice.createInjector(new MainModule());
 
         registerListener(injector.getInstance(ServerListener.class)).bindWith(this);
         registerListener(injector.getInstance(TownyListener.class)).bindWith(this);
@@ -60,6 +45,24 @@ public class TownyLink extends ExtendedJavaPlugin {
 
     @Override protected void disable() {
 
+    }
+
+    private class MainModule extends AbstractModule {
+        @Override protected void configure() {
+            bind(TownyLink.class).toInstance(TownyLink.this);
+
+            Plugin connectorPlugin = getServer().getPluginManager().getPlugin("ConnectorPlugin");
+            if (connectorPlugin == null) {
+                bind(Messenger.class).to(DummyMessenger.class).in(Scopes.SINGLETON);
+            } else {
+                bind(Messenger.class).to(ConnectorMessenger.class).in(Scopes.SINGLETON);
+                bind(BukkitConnectorPlugin.class).toInstance((BukkitConnectorPlugin) connectorPlugin);
+            }
+
+            bind(TownyRepository.class).toProvider(TownyRepositoryProvider.class).in(Scopes.SINGLETON);
+            bind(ServerListener.class).toProvider(ServerListenerProvider.class).in(Scopes.SINGLETON);
+            bind(TownyListener.class).toProvider(TownyListenerProvider.class).in(Scopes.SINGLETON);
+        }
     }
 
 }

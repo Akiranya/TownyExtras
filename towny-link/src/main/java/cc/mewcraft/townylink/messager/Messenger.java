@@ -15,4 +15,10 @@ public interface Messenger {
      * The same as {@link #sendMessage(String, List)}.
      */
     void sendMessage(String action, String... names);
+
+    /**
+     * Requests names from all other servers.
+     */
+    void fetch();
+
 }
