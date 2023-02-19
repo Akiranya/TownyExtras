@@ -16,11 +16,11 @@ repositories {
 
 dependencies {
     compileOnly(files("libs/bettergui-8.2-shaded.jar"))
-    compileOnly("me.hsgamer", "hscore-minecraft-gui-advanced", "4.2.7") {
-        exclude("me.hsgamer", "hscore-ui")
-        exclude("me.hsgamer", "hscore-minecraft-gui")
-    }
     compileOnly("me.hsgamer.bettergui", "MaskedGUI", "2.2-SNAPSHOT")
+    // compileOnly("me.hsgamer", "hscore-minecraft-gui-advanced", "4.2.7") {
+    //     exclude("me.hsgamer", "hscore-ui")
+    //     exclude("me.hsgamer", "hscore-minecraft-gui")
+    // }
 }
 
 tasks {
