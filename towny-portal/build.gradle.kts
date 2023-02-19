@@ -1,37 +1,69 @@
 plugins {
     id("cc.mewcraft.common")
-    id("net.minecrell.plugin-yml.bukkit") version "0.5.2"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 group = "cc.mewcraft.townyportal"
-version = "1.0.0"
+version = "1.0"
 description = "Enhance the communication between towns and nations"
 
-dependencies {
-    compileOnly("com.google.inject", "guice", "5.1.0")
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven("https://repo.codemc.io/repository/maven-public/")
+    maven("https://oss.sonatype.org/content/groups/public/")
 }
 
-bukkit {
-    main = "cc.mewcraft.townyportal"
-    name = "TownyPortal"
-    version = "${project.version}"
-    apiVersion = "1.17"
-    authors = listOf("Nailm")
-    depend = listOf("helper", "MewCore")
+dependencies {
+    compileOnly(files("libs/bettergui-8.2-shaded.jar"))
+    compileOnly("me.hsgamer", "hscore-minecraft-gui-advanced", "4.2.7") {
+        exclude("me.hsgamer", "hscore-ui")
+        exclude("me.hsgamer", "hscore-minecraft-gui")
+    }
+    compileOnly("me.hsgamer.bettergui", "MaskedGUI", "2.2-SNAPSHOT")
 }
 
 tasks {
-    // register("deployJar") {
-    //     doLast {
-    //         exec {
-    //             commandLine("rsync", jar.get().archiveFile.get().asFile.absoluteFile, "dev:data/dev/jar")
-    //         }
-    //     }
-    // }
-    // register("deployJarFresh") {
-    //     dependsOn(build)
-    //     finalizedBy(named("deployJar"))
-    // }
+    jar {
+        archiveClassifier.set("noshade")
+    }
+    assemble {
+        dependsOn(shadowJar)
+    }
+    shadowJar {
+        minimize()
+        archiveClassifier.set("")
+        archiveBaseName.set("TownyPortal")
+        relocate("me.hsgamer.hscore", "me.hsgamer.bettergui.lib.core")
+        relocate("org.bstats", "me.hsgamer.bettergui.lib.bstats")
+    }
+    processResources {
+        filesMatching("addon.yml") {
+            filter { string ->
+                var result = string
+                mapOf(
+                    "project.name" to "TownyPortal",
+                    "project.version" to "${project.version}",
+                    "project.mainClass" to "cc.mewcraft.townyportal.TownyPortal",
+                    "project.description" to project.description
+                ).forEach { (key, value) ->
+                    result = result.replace("\${$key}", value.toString())
+                }
+                result
+            }
+        }
+    }
+    register("deployJar") {
+        doLast {
+            exec {
+                commandLine("rsync", shadowJar.get().archiveFile.get().asFile.absoluteFile, "dev:data/dev/jar")
+            }
+        }
+    }
+    register("deployJarFresh") {
+        dependsOn(build)
+        finalizedBy(named("deployJar"))
+    }
 }
 
 fun lastCommitHash(): String = indraGit.commit()?.name?.substring(0, 7) ?: error("Could not determine commit hash")
