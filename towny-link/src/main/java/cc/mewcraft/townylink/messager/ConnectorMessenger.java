@@ -68,16 +68,16 @@ public class ConnectorMessenger implements Messenger, Terminable {
         });
         registerHandler(Action.FETCH, (player, message) -> {
             String source = message.getSendingServer();
-            // TODO should use callback here (CompletableFuture)
-            //  the pattern here is "send message and get response"
             sendData(Action.ADD_TOWN, MessageTarget.SERVER, source, writeNames(TownyUtils.getAllTowns()));
             sendData(Action.ADD_NATION, MessageTarget.SERVER, source, writeNames(TownyUtils.getALlNations()));
         });
     }
 
     @Override public void fetch() {
+        // TODO should use callback here (CompletableFuture)
+        //  the pattern here is "send message and get response"
         sendData(Action.FETCH, MessageTarget.OTHERS_QUEUE, new byte[0]);
-        this.plugin.getLogger().info("Send Message | Action: %s".formatted(Action.FETCH));
+        reportSent(Action.FETCH, List.of());
     }
 
     @Override public void sendMessage(String action, List<String> names) {
@@ -130,13 +130,13 @@ public class ConnectorMessenger implements Messenger, Terminable {
 
     private void reportReceived(String action, List<String> names) {
         this.plugin.getLogger().info(
-            "Recv Message | Action: %s | Data: %s".formatted(action, names.stream().reduce((a, b) -> a + ", " + b).orElse(""))
+            "Recv message | Action: %s | Data: %s".formatted(action, names.stream().reduce((a, b) -> a + ", " + b).orElse(""))
         );
     }
 
     private void reportSent(String action, List<String> names) {
         this.plugin.getLogger().info(
-            "Send Message | Action: %s | Data: %s".formatted(action, names.stream().reduce((a, b) -> a + ", " + b).orElse(""))
+            "Send message | Action: %s | Data: %s".formatted(action, names.stream().reduce((a, b) -> a + ", " + b).orElse(""))
         );
     }
 
