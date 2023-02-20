@@ -18,6 +18,9 @@ package cc.mewcraft.townyportal.mask;
 
 
 import cc.mewcraft.townyportal.TownyPortal;
+import com.palmergames.bukkit.towny.TownyAPI;
+import com.palmergames.bukkit.towny.object.Resident;
+import com.palmergames.bukkit.towny.object.Town;
 import me.hsgamer.bettergui.builder.ButtonBuilder;
 import me.hsgamer.bettergui.builder.RequirementBuilder;
 import me.hsgamer.bettergui.lib.core.common.CollectionUtils;
@@ -31,7 +34,6 @@ import me.hsgamer.bettergui.requirement.type.ConditionRequirement;
 import me.hsgamer.bettergui.util.MapUtil;
 import me.hsgamer.bettergui.util.StringReplacerApplier;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 
@@ -71,8 +73,8 @@ public class TownListMask extends WrappedPaginatedMask<ButtonPaginatedMask> impl
         });
     }
 
-    private final Map<UUID, TownListMask.PlayerEntry> playerEntryMap = new ConcurrentHashMap<>();
     private final TownyPortal addon;
+    private final Map<UUID, TownEntry> mayorEntryMap = new ConcurrentHashMap<>();
     private Map<String, Object> templateButton = Collections.emptyMap();
     private ConditionRequirement playerCondition;
     private List<String> viewerConditionTemplate = Collections.emptyList();
@@ -129,58 +131,59 @@ public class TownListMask extends WrappedPaginatedMask<ButtonPaginatedMask> impl
         return newList;
     }
 
-    private boolean canView(UUID uuid, TownListMask.PlayerEntry targetPlayerEntry) {
-        if (!viewSelf && uuid.equals(targetPlayerEntry.uuid)) {
+    private boolean canView(UUID viewer, TownEntry targetTownEntry) {
+        if (!this.viewSelf && viewer.equals(targetTownEntry.uuid)) {
             return false;
         }
-        if (!targetPlayerEntry.activated.get()) {
+        if (!targetTownEntry.activated.get()) {
             return false;
         }
-        return targetPlayerEntry.viewerCondition.test(uuid);
+        return targetTownEntry.viewerCondition.test(viewer);
     }
 
-    private TownListMask.PlayerEntry newPlayerEntry(UUID uuid) {
-        Map<String, Object> replacedButtonSettings = replaceShortcut(templateButton, uuid);
-        Button button = ButtonBuilder.INSTANCE.build(new ButtonBuilder.Input(getMenu(), getName() + "_player_" + uuid + "_button", replacedButtonSettings))
+    private TownEntry newTownEntry(UUID mayor) {
+        Map<String, Object> replacedButtonSettings = replaceShortcut(this.templateButton, mayor);
+        Button button = ButtonBuilder.INSTANCE.build(new ButtonBuilder.Input(getMenu(), getName() + "_player_" + mayor + "_button", replacedButtonSettings))
             .map(Button.class::cast)
             .orElse(Button.EMPTY);
         button.init();
 
-        List<String> replacedViewerConditions = replaceShortcut(viewerConditionTemplate, uuid);
-        ConditionRequirement viewerCondition = new ConditionRequirement(new RequirementBuilder.Input(getMenu(), "condition", getName() + "_player_" + uuid + "_condition", replacedViewerConditions));
-        return new TownListMask.PlayerEntry(uuid, button, uuid1 -> viewerCondition.check(uuid1).isSuccess);
+        List<String> replacedViewerConditions = replaceShortcut(this.viewerConditionTemplate, mayor);
+        ConditionRequirement viewerCondition = new ConditionRequirement(new RequirementBuilder.Input(getMenu(), "condition", getName() + "_player_" + mayor + "_condition", replacedViewerConditions));
+        return new TownEntry(mayor, button, viewer -> viewerCondition.check(viewer).isSuccess);
     }
 
-    private List<Button> getPlayerButtons(UUID uuid) {
-        return Bukkit.getOnlinePlayers()
+    private List<Button> getTownButtons(UUID viewer) {
+        return TownyAPI.getInstance().getTowns()
             .stream()
-            .map(Player::getUniqueId)
-            .map(playerEntryMap::get)
+            .map(Town::getMayor)
+            .map(Resident::getUUID)
+            .map(this.mayorEntryMap::get)
             .filter(Objects::nonNull)
-            .filter(entry -> canView(uuid, entry))
+            .filter(entry -> canView(viewer, entry))
             .map(entry -> entry.button)
             .collect(Collectors.toList());
     }
 
     @Override
     protected ButtonPaginatedMask createPaginatedMask(Map<String, Object> section) {
-        templateButton = Optional.ofNullable(MapUtil.getIfFound(section, "template", "button"))
+        this.templateButton = Optional.ofNullable(MapUtil.getIfFound(section, "template", "button"))
             .flatMap(MapUtil::castOptionalStringObjectMap)
             .orElse(Collections.emptyMap());
-        viewSelf = Optional.ofNullable(MapUtil.getIfFound(section, "view-self", "self"))
+        this.viewSelf = Optional.ofNullable(MapUtil.getIfFound(section, "view-self", "self"))
             .map(String::valueOf)
             .map(Boolean::parseBoolean)
             .orElse(true);
-        playerCondition = Optional.ofNullable(MapUtil.getIfFound(section, "player-condition"))
+        this.playerCondition = Optional.ofNullable(MapUtil.getIfFound(section, "player-condition"))
             .map(o -> new ConditionRequirement(new RequirementBuilder.Input(getMenu(), "condition", getName() + "_player_condition", o)))
             .orElse(null);
-        viewerConditionTemplate = Optional.ofNullable(MapUtil.getIfFound(section, "viewer-condition"))
+        this.viewerConditionTemplate = Optional.ofNullable(MapUtil.getIfFound(section, "viewer-condition"))
             .map(CollectionUtils::createStringListFromObject)
             .orElse(Collections.emptyList());
         return new ButtonPaginatedMask(getName(), MultiSlotUtil.getSlots(section)) {
             @Override
             public @NotNull List<@NotNull Button> getButtons(@NotNull UUID uuid) {
-                return getPlayerButtons(uuid);
+                return getTownButtons(uuid);
             }
         };
     }
@@ -188,39 +191,41 @@ public class TownListMask extends WrappedPaginatedMask<ButtonPaginatedMask> impl
     @Override
     public void init() {
         super.init();
-        updateTask = Bukkit.getScheduler().runTaskTimerAsynchronously(addon.getPlugin(), this, 0L, 20L);
+        this.updateTask = Bukkit.getScheduler().runTaskTimerAsynchronously(this.addon.getPlugin(), this, 0L, 100L);
     }
 
     @Override
     public void stop() {
         super.stop();
-        if (updateTask != null) {
-            updateTask.cancel();
+        if (this.updateTask != null) {
+            this.updateTask.cancel();
         }
-        playerEntryMap.values().forEach(playerEntry -> playerEntry.button.stop());
-        playerEntryMap.clear();
+        this.mayorEntryMap.values().forEach(mayorEntry -> mayorEntry.button.stop());
+        this.mayorEntryMap.clear();
     }
 
     @Override
     public void run() {
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            playerEntryMap.compute(player.getUniqueId(), (currentId, currentEntry) -> {
+        TownyAPI.getInstance().getTowns()
+            .stream()
+            .map(Town::getMayor)
+            .map(Resident::getUUID)
+            .forEach(mayor -> this.mayorEntryMap.compute(mayor, (currentId, currentEntry) -> {
                 if (currentEntry == null) {
-                    currentEntry = newPlayerEntry(currentId);
+                    currentEntry = newTownEntry(currentId);
                 }
-                currentEntry.activated.lazySet(playerCondition == null || playerCondition.check(currentId).isSuccess);
+                currentEntry.activated.lazySet(this.playerCondition == null || this.playerCondition.check(currentId).isSuccess);
                 return currentEntry;
-            });
-        }
+            }));
     }
 
-    private static class PlayerEntry {
-        final UUID uuid;
+    private static class TownEntry {
+        final UUID uuid; // mayor's uuid
         final Button button;
         final Predicate<UUID> viewerCondition;
         final AtomicBoolean activated = new AtomicBoolean();
 
-        private PlayerEntry(UUID uuid, Button button, Predicate<UUID> viewerCondition) {
+        private TownEntry(UUID uuid, Button button, Predicate<UUID> viewerCondition) {
             this.uuid = uuid;
             this.button = button;
             this.viewerCondition = viewerCondition;
