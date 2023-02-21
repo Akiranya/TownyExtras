@@ -15,7 +15,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly(files("libs/bettergui-8.3-shaded.jar"))
+    compileOnly("me.hsgamer", "bettergui", "8.3", classifier = "shaded")
     compileOnly("me.hsgamer.bettergui", "MaskedGUI", "2.2-SNAPSHOT")
     // compileOnly("me.hsgamer", "hscore-minecraft-gui-advanced", "4.2.7") {
     //     exclude("me.hsgamer", "hscore-ui")
