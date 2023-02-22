@@ -137,12 +137,20 @@ public class ConnectorMessenger implements Messenger, Terminable {
     //// Methods to report sent & received messages /////
 
     private void reportReceived(String action, String source, List<String> data) {
+        if (data.isEmpty()) {
+            reportReceived(action, source);
+            return;
+        }
         this.plugin.getLogger().info(
             "Recv message | Source: %s | Action: %s | Data: %s".formatted(source, action, data.stream().reduce((a, b) -> a + ", " + b).orElse(""))
         );
     }
 
     private void reportSent(String action, List<String> data) {
+        if (data.isEmpty()) {
+            reportSent(action);
+            return;
+        }
         this.plugin.getLogger().info(
             "Send message | Action: %s | Data: %s".formatted(action, data.stream().reduce((a, b) -> a + ", " + b).orElse(""))
         );
