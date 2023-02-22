@@ -1,6 +1,5 @@
 plugins {
     id("cc.mewcraft.common")
-    id("net.minecrell.plugin-yml.bukkit") version "0.5.2"
 }
 
 group = "cc.mewcraft.townylink"
@@ -12,20 +11,17 @@ dependencies {
     compileOnly("de.themoep.connectorplugin", "bukkit", "1.5-SNAPSHOT")
 }
 
-bukkit {
-    main = "cc.mewcraft.townylink.TownyLink"
-    name = "TownyLink"
-    version = "${project.version}"
-    apiVersion = "1.17"
-    authors = listOf("Nailm")
-    depend = listOf("helper", "MewCore", "Towny")
-    softDepend = listOf("ConnectorPlugin")
-    libraries = listOf("com.google.inject:guice:5.1.0")
-}
-
 tasks {
     jar {
-        archiveBaseName.set(bukkit.name)
+        archiveBaseName.set("TownyLink")
+    }
+    processResources {
+        filesMatching("**/paper-plugin.yml") {
+            expand(mapOf(
+                "version" to "${project.version}",
+                "description" to project.description
+            ))
+        }
     }
     register("deployJar") {
         doLast {
