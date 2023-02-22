@@ -1,18 +1,22 @@
 name: TownyLink
+version: ${version}
+description: ${description}
 main: cc.mewcraft.townylink.TownyLink
 loader: cc.mewcraft.townylink.TownyLinkLoader
-version: ${version}
 api-version: 1.19
 authors: [ Nailm ]
-description: ${description}
 load-before: [ ]
 load-after: [ ]
 dependencies:
   - name: Towny
     required: true
+    bootstrap: false
   - name: helper
     required: true
+    bootstrap: false
   - name: MewCore
     required: true
+    bootstrap: false
   - name: ConnectorPlugin
     required: false
+    bootstrap: false
