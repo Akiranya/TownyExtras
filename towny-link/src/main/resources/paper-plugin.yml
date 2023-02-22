@@ -3,7 +3,7 @@ main: cc.mewcraft.townylink.TownyLink
 loader: cc.mewcraft.townylink.TownyLinkLoader
 version: ${version}
 api-version: 1.19
-author: Nailm
+authors: [ Nailm ]
 description: ${description}
 load-before: [ ]
 load-after: [ ]
