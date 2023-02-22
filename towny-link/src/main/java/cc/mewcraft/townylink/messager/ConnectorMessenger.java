@@ -46,47 +46,55 @@ public class ConnectorMessenger implements Messenger, Terminable {
      * Handles incoming messages.
      */
     private void registerHandlers() {
+
+        // --- Update local repository ---
+
         registerHandler(Action.ADD_TOWN, (player, message) -> {
+            String source = message.getSendingServer();
             List<String> townNames = readNames(message.getData());
-            this.repository.addAllTowns(townNames);
-            reportReceived(Action.ADD_TOWN, townNames);
+            this.repository.addAllTownNames(townNames);
+            reportReceived(Action.ADD_TOWN, source, townNames);
         });
         registerHandler(Action.ADD_NATION, (player, message) -> {
+            String source = message.getSendingServer();
             List<String> nationNames = readNames(message.getData());
-            this.repository.addAllNations(nationNames);
-            reportReceived(Action.ADD_NATION, nationNames);
+            this.repository.addAllNationNames(nationNames);
+            reportReceived(Action.ADD_NATION, source, nationNames);
         });
         registerHandler(Action.DELETE_TOWN, (player, message) -> {
+            String source = message.getSendingServer();
             List<String> townNames = readNames(message.getData());
-            this.repository.removeAllTowns(townNames);
-            reportReceived(Action.DELETE_TOWN, townNames);
+            this.repository.removeAllTownName(townNames);
+            reportReceived(Action.DELETE_TOWN, source, townNames);
         });
         registerHandler(Action.DELETE_NATION, (player, message) -> {
-            List<String> nationNames = readNames(message.getData());
-            this.repository.removeAllNations(nationNames);
-            reportReceived(Action.DELETE_NATION, nationNames);
-        });
-        registerHandler(Action.FETCH, (player, message) -> {
             String source = message.getSendingServer();
-            sendData(Action.ADD_TOWN, MessageTarget.SERVER, source, writeNames(TownyUtils.getAllTowns()));
-            sendData(Action.ADD_NATION, MessageTarget.SERVER, source, writeNames(TownyUtils.getALlNations()));
+            List<String> nationNames = readNames(message.getData());
+            this.repository.removeAllNationNames(nationNames);
+            reportReceived(Action.DELETE_NATION, source, nationNames);
+        });
+
+        // --- Reply peer requests ---
+
+        // TODO Use callback here (CompletableFuture).
+        //  The pattern here is "send request and get response"
+        registerHandler(Action.FETCH_TOWN, (player, message) -> { // Reply the requested data
+            String source = message.getSendingServer();
+            byte[] names = writeNames(TownyUtils.getAllTownNames());
+            sendData(Action.ADD_TOWN, MessageTarget.SERVER, source, names);
+            reportReceived(Action.FETCH_TOWN, source);
+        });
+        registerHandler(Action.FETCH_NATION, (player, message) -> { // Reply the requested data
+            String source = message.getSendingServer();
+            byte[] names = writeNames(TownyUtils.getALlNationNames());
+            sendData(Action.ADD_NATION, MessageTarget.SERVER, source, names);
+            reportReceived(Action.FETCH_NATION, source);
         });
     }
 
-    @Override public void fetch() {
-        // TODO should use callback here (CompletableFuture)
-        //  the pattern here is "send message and get response"
-        sendData(Action.FETCH, MessageTarget.OTHERS_QUEUE, new byte[0]);
-        reportSent(Action.FETCH, List.of());
-    }
-
-    @Override public void sendMessage(String action, List<String> names) {
-        sendData(action, MessageTarget.OTHERS_QUEUE, writeNames(names));
-        reportSent(action, names);
-    }
-
-    @Override public void sendMessage(String action, String... names) {
-        sendMessage(action, Arrays.asList(names));
+    @Override public void sendMessage(String action, List<String> data) {
+        sendData(action, MessageTarget.OTHERS_QUEUE, writeNames(data));
+        reportSent(action, data);
     }
 
     //// Convenient methods to send/receive data ////
@@ -126,17 +134,29 @@ public class ConnectorMessenger implements Messenger, Terminable {
         return writeNames(Arrays.asList(names));
     }
 
-    //// Methods to report sent & received /////
+    //// Methods to report sent & received messages /////
 
-    private void reportReceived(String action, List<String> names) {
+    private void reportReceived(String action, String source, List<String> data) {
         this.plugin.getLogger().info(
-            "Recv message | Action: %s | Data: %s".formatted(action, names.stream().reduce((a, b) -> a + ", " + b).orElse(""))
+            "Recv message | Source: %s | Action: %s | Data: %s".formatted(source, action, data.stream().reduce((a, b) -> a + ", " + b).orElse(""))
         );
     }
 
-    private void reportSent(String action, List<String> names) {
+    private void reportSent(String action, List<String> data) {
         this.plugin.getLogger().info(
-            "Send message | Action: %s | Data: %s".formatted(action, names.stream().reduce((a, b) -> a + ", " + b).orElse(""))
+            "Send message | Action: %s | Data: %s".formatted(action, data.stream().reduce((a, b) -> a + ", " + b).orElse(""))
+        );
+    }
+
+    private void reportReceived(String action, String source) {
+        this.plugin.getLogger().info(
+            "Recv message | Source: %s | Action: %s".formatted(source, action)
+        );
+    }
+
+    private void reportSent(String action) {
+        this.plugin.getLogger().info(
+            "Send message | Action: %s".formatted(action)
         );
     }
 

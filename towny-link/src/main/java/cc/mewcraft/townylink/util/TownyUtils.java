@@ -8,11 +8,11 @@ import java.util.List;
 
 public final class TownyUtils {
 
-    public static List<String> getAllTowns() {
+    public static List<String> getAllTownNames() {
         return TownyAPI.getInstance().getTowns().stream().map(Town::getName).toList();
     }
 
-    public static List<String> getALlNations() {
+    public static List<String> getALlNationNames() {
         return TownyAPI.getInstance().getNations().stream().map(Nation::getName).toList();
     }
 

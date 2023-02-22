@@ -1,24 +1,20 @@
 package cc.mewcraft.townylink.messager;
 
+import java.util.Arrays;
 import java.util.List;
 
 public interface Messenger {
+
     /**
-     * Sends names of Towny objects to other servers.
+     * Sends message to other Towny servers, with specific action and data.
      *
      * @param action an {@link Action}
-     * @param names  names to sync
+     * @param data   optional data to send
      */
-    void sendMessage(String action, List<String> names);
+    void sendMessage(String action, List<String> data);
 
-    /**
-     * The same as {@link #sendMessage(String, List)}.
-     */
-    void sendMessage(String action, String... names);
-
-    /**
-     * Requests names from all other servers.
-     */
-    void fetch();
+    default void sendMessage(String action, String... data) {
+        sendMessage(action, Arrays.asList(data));
+    }
 
 }

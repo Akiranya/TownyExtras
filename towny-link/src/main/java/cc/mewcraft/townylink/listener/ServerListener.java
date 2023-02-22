@@ -30,19 +30,18 @@ public class ServerListener implements AutoCloseableListener {
         if (event.getType() != ServerLoadEvent.LoadType.STARTUP)
             return;
 
-        this.plugin.getComponentLogger().info(
-            UtilComponent.asComponent("<aqua>Sending town and nation names to other servers...")
-        );
-
         Schedulers.async().runLater(() -> {
-            this.messenger.fetch();
-            this.messenger.sendMessage(Action.ADD_TOWN, TownyUtils.getAllTowns());
-            this.messenger.sendMessage(Action.ADD_NATION, TownyUtils.getALlNations());
+            this.plugin.getComponentLogger().info(UtilComponent.asComponent(
+                "<aqua>Synchronizing Towny data with other servers...")
+            );
+            this.messenger.sendMessage(Action.FETCH_TOWN);
+            this.messenger.sendMessage(Action.FETCH_NATION);
+            this.messenger.sendMessage(Action.ADD_TOWN, TownyUtils.getAllTownNames());
+            this.messenger.sendMessage(Action.ADD_NATION, TownyUtils.getALlNationNames());
+            this.plugin.getComponentLogger().info(UtilComponent.asComponent(
+                "<aqua>Synchronization completed!")
+            );
         }, 5, TimeUnit.SECONDS);
-
-        this.plugin.getComponentLogger().info(
-            UtilComponent.asComponent("<aqua>Sending completed!")
-        );
 
     }
 

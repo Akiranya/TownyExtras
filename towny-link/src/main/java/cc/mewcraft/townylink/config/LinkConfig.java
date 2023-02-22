@@ -10,7 +10,7 @@ import java.util.List;
 public class LinkConfig {
 
     private final TownyLink plugin;
-    private final List<String> targetServers;
+    private final List<String> targetServers; // currently not used
 
     @Inject
     public LinkConfig(final TownyLink plugin) {

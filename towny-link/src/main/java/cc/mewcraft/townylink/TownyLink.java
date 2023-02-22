@@ -5,7 +5,7 @@ import cc.mewcraft.townylink.config.LinkConfig;
 import cc.mewcraft.townylink.listener.ServerListener;
 import cc.mewcraft.townylink.listener.TownyListener;
 import cc.mewcraft.townylink.messager.ConnectorMessenger;
-import cc.mewcraft.townylink.messager.DummyMessenger;
+import cc.mewcraft.townylink.messager.EmptyMessenger;
 import cc.mewcraft.townylink.messager.Messenger;
 import cc.mewcraft.townylink.object.TownyRepository;
 import com.google.inject.*;
@@ -51,7 +51,7 @@ public class TownyLink extends ExtendedJavaPlugin {
 
             Plugin connectorPlugin = getServer().getPluginManager().getPlugin("ConnectorPlugin");
             if (connectorPlugin == null) {
-                bind(Messenger.class).to(DummyMessenger.class).in(Scopes.SINGLETON);
+                bind(Messenger.class).to(EmptyMessenger.class).in(Scopes.SINGLETON);
             } else {
                 bind(Messenger.class).to(ConnectorMessenger.class).in(Scopes.SINGLETON);
                 bind(BukkitConnectorPlugin.class).toInstance((BukkitConnectorPlugin) connectorPlugin);
