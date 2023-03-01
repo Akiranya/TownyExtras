@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "cc.mewcraft.townyportal"
-version = "1.0"
+version = "1.1"
 description = "Enhance the communication between towns and nations"
 
 repositories {
@@ -42,10 +42,10 @@ tasks {
             filter { string ->
                 var result = string
                 mapOf(
-                    "project.name" to "TownyPortal",
-                    "project.version" to "${project.version}",
-                    "project.mainClass" to "cc.mewcraft.townyportal.TownyPortal",
-                    "project.description" to project.description
+                    "name" to "TownyPortal",
+                    "version" to "${project.version}",
+                    "mainClass" to "cc.mewcraft.townyportal.TownyPortal",
+                    "description" to project.description
                 ).forEach { (key, value) ->
                     result = result.replace("\${$key}", value.toString())
                 }
