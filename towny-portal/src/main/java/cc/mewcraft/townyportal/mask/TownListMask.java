@@ -1,7 +1,6 @@
 package cc.mewcraft.townyportal.mask;
 
 
-import cc.mewcraft.townyportal.TownyPortal;
 import com.palmergames.bukkit.towny.TownyAPI;
 import com.palmergames.bukkit.towny.object.Resident;
 import com.palmergames.bukkit.towny.object.Town;
@@ -12,8 +11,8 @@ import java.util.stream.Stream;
 
 public class TownListMask extends IdentifiableListMask {
 
-    public TownListMask(final TownyPortal addon, final MaskBuilder.Input input) {
-        super(addon, input);
+    public TownListMask(final MaskBuilder.Input input) {
+        super(input);
     }
 
     @Override public Stream<UUID> getIdentifiable() {

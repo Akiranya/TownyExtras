@@ -16,13 +16,11 @@
 
 package cc.mewcraft.townyportal.mask;
 
-import cc.mewcraft.townyportal.TownyPortal;
 import me.hsgamer.bettergui.builder.ButtonBuilder;
 import me.hsgamer.bettergui.builder.RequirementBuilder;
 import me.hsgamer.bettergui.lib.core.common.CollectionUtils;
 import me.hsgamer.bettergui.lib.core.minecraft.gui.button.Button;
 import me.hsgamer.bettergui.lib.core.minecraft.gui.mask.impl.ButtonPaginatedMask;
-import me.hsgamer.bettergui.lib.core.variable.VariableManager;
 import me.hsgamer.bettergui.maskedgui.builder.MaskBuilder;
 import me.hsgamer.bettergui.maskedgui.mask.WrappedPaginatedMask;
 import me.hsgamer.bettergui.maskedgui.util.MultiSlotUtil;
@@ -50,11 +48,19 @@ import java.util.stream.Stream;
  * The subclass only needs to provide a specific list of UUIDs.
  */
 public abstract class IdentifiableListMask extends WrappedPaginatedMask<ButtonPaginatedMask> {
-
     private static final Pattern pattern = Pattern.compile("\\{current_player(_([^{}]+))?}");
 
-    static {
-        VariableManager.register("current_", (original, uuid) -> {
+    private final Map<UUID, ResidentEntry> identifiableEntryMap = new ConcurrentHashMap<>();
+    private final String variablePrefix;
+    private Map<String, Object> templateButton = Collections.emptyMap();
+    private ConditionRequirement playerCondition;
+    private List<String> viewerConditionTemplate = Collections.emptyList();
+    private boolean viewSelf = true;
+
+    public IdentifiableListMask(MaskBuilder.Input input) {
+        super(input);
+        this.variablePrefix = getName() + "_current_";
+        input.menu.getVariableManager().register(this.variablePrefix, (original, uuid) -> {
             String[] split = original.split(";", 3);
             if (split.length < 2) {
                 return null;
@@ -77,38 +83,26 @@ public abstract class IdentifiableListMask extends WrappedPaginatedMask<ButtonPa
         });
     }
 
-    private final TownyPortal addon;
-    private final Map<UUID, ResidentEntry> identifiableEntryMap = new ConcurrentHashMap<>();
-    private Map<String, Object> templateButton = Collections.emptyMap();
-    private ConditionRequirement playerCondition;
-    private List<String> viewerConditionTemplate = Collections.emptyList();
-    private boolean viewSelf = true;
-
-    public IdentifiableListMask(TownyPortal addon, MaskBuilder.Input input) {
-        super(input);
-        this.addon = addon;
-    }
-
-    private static String replaceShortcut(String string, UUID targetId) {
+    private String replaceShortcut(String string, UUID targetId) {
         Matcher matcher = pattern.matcher(string);
         while (matcher.find()) {
             String variable = matcher.group(2);
             String replacement;
             if (variable == null) {
-                replacement = "{current_" + targetId.toString() + ";player}";
+                replacement = "{" + this.variablePrefix + targetId.toString() + ";player}";
             } else {
                 boolean isPAPI = variable.startsWith("papi_");
                 if (isPAPI) {
                     variable = variable.substring(5);
                 }
-                replacement = "{current_" + targetId.toString() + ";" + variable + ";" + isPAPI + "}";
+                replacement = "{" + this.variablePrefix + targetId.toString() + ";" + variable + ";" + isPAPI + "}";
             }
             string = string.replace(matcher.group(), replacement);
         }
         return string;
     }
 
-    private static Object replaceShortcut(Object obj, UUID targetId) {
+    private Object replaceShortcut(Object obj, UUID targetId) {
         if (obj instanceof String) {
             return replaceShortcut((String) obj, targetId);
         } else if (obj instanceof Collection) {
@@ -122,13 +116,13 @@ public abstract class IdentifiableListMask extends WrappedPaginatedMask<ButtonPa
         return obj;
     }
 
-    private static Map<String, Object> replaceShortcut(Map<String, Object> map, UUID targetId) {
+    private Map<String, Object> replaceShortcut(Map<String, Object> map, UUID targetId) {
         Map<String, Object> newMap = new LinkedHashMap<>();
         map.forEach((k, v) -> newMap.put(k, replaceShortcut(v, targetId)));
         return newMap;
     }
 
-    private static List<String> replaceShortcut(List<String> list, UUID targetId) {
+    private List<String> replaceShortcut(List<String> list, UUID targetId) {
         List<String> newList = new ArrayList<>();
         list.forEach(s -> newList.add(replaceShortcut(s, targetId)));
         return newList;
@@ -224,5 +218,4 @@ public abstract class IdentifiableListMask extends WrappedPaginatedMask<ButtonPa
             this.viewerCondition = viewerCondition;
         }
     }
-
 }

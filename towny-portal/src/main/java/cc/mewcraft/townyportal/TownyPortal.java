@@ -8,8 +8,8 @@ import me.hsgamer.bettergui.maskedgui.builder.MaskBuilder;
 public class TownyPortal extends PluginAddon {
 
     @Override public void onEnable() {
-        MaskBuilder.INSTANCE.register(input -> new TownListMask(this, input), "town-list", "townlist", "towns");
-        MaskBuilder.INSTANCE.register(input -> new NationListMask(this, input), "nation-list", "nationlist", "nations");
+        MaskBuilder.INSTANCE.register(TownListMask::new, "town-list", "townlist", "towns");
+        MaskBuilder.INSTANCE.register(NationListMask::new, "nation-list", "nationlist", "nations");
     }
 
 }
