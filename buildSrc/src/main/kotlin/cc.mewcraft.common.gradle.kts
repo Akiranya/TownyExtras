@@ -51,9 +51,9 @@ dependencies {
     compileOnly("io.papermc.paper", "paper-api", "1.19.3-R0.1-SNAPSHOT")
 
     // Plugin libs
-    compileOnly("cc.mewcraft", "MewCore", "5.13.1")
+    compileOnly("cc.mewcraft", "mewcore", "5.16.1")
     compileOnly("me.lucko", "helper", "5.6.13") { isTransitive = false }
-    compileOnly("com.palmergames.bukkit.towny", "towny", "0.98.6.0") { isTransitive = false }
+    compileOnly("com.palmergames.bukkit.towny", "towny", "0.99.0.0") { isTransitive = false }
 }
 
 indra {
