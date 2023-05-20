@@ -34,21 +34,21 @@ repositories {
             includeGroup("de.themoep.connectorplugin")
         }
     }
-    // maven("https://jitpack.io") {
-    //     content {
-    //         includeGroup("com.github.MilkBowl")
-    //     }
-    // }
-    // maven("https://repo.extendedclip.com/content/repositories/placeholderapi/") {
-    //     content {
-    //         includeGroup("me.clip")
-    //     }
-    // }
+    maven("https://jitpack.io") {
+        content {
+            includeGroup("com.github.MilkBowl")
+        }
+    }
+    maven("https://repo.extendedclip.com/content/repositories/placeholderapi/") {
+        content {
+            includeGroup("me.clip")
+        }
+    }
 }
 
 dependencies {
     // Server API
-    compileOnly("io.papermc.paper", "paper-api", "1.19.3-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper", "paper-api", "1.19.4-R0.1-SNAPSHOT")
 
     // Plugin libs
     compileOnly("cc.mewcraft", "mewcore", "5.16.1")
