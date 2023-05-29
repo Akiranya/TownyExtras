@@ -15,6 +15,7 @@
             <option value="$PROJECT_DIR$/buildSrc" />
             <option value="$PROJECT_DIR$/towny-bonus" />
             <option value="$PROJECT_DIR$/towny-link" />
+            <option value="$PROJECT_DIR$/towny-origin" />
             <option value="$PROJECT_DIR$/towny-portal" />
           </set>
         </option>
