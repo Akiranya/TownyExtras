@@ -1,5 +1,9 @@
 plugins {
-    id("cc.mewcraft.common")
+    val mewcraftVersion = "1.0.0"
+    id("cc.mewcraft.java-conventions") version mewcraftVersion
+    id("cc.mewcraft.repository-conventions") version mewcraftVersion
+    id("cc.mewcraft.project-conventions")
+    alias(libs.plugins.indra)
 }
 
 group = "cc.mewcraft.townybonus"
@@ -7,10 +11,18 @@ version = "1.3.0"
 description = "Add bonus to towns and nations!"
 
 dependencies {
-    // External plugins
-    compileOnly("net.luckperms", "api", "5.4")
-    compileOnly("com.github.MilkBowl", "VaultAPI", "1.7") { isTransitive = false }
-    compileOnly("me.clip", "placeholderapi", "2.11.2")
+    // server api
+    compileOnly(libs.server.paper)
+
+    // my own libs
+    compileOnly(libs.mewcore)
+
+    // libs that present as other plugins
+    compileOnly(libs.towny)
+    compileOnly(libs.helper)
+    compileOnly(libs.luckperms)
+    compileOnly(libs.vault) { isTransitive = false }
+    compileOnly(libs.papi)
 }
 
 tasks {
@@ -38,4 +50,8 @@ tasks {
         dependsOn(build)
         finalizedBy(named("deployJar"))
     }
+}
+
+indra {
+    javaVersions().target(17)
 }

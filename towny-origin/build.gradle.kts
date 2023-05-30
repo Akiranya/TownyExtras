@@ -1,5 +1,9 @@
 plugins {
-    id("cc.mewcraft.common")
+    val mewcraftVersion = "1.0.0"
+    id("cc.mewcraft.java-conventions") version mewcraftVersion
+    id("cc.mewcraft.repository-conventions") version mewcraftVersion
+    id("cc.mewcraft.project-conventions")
+    alias(libs.plugins.indra)
 }
 
 group = "cc.mewcraft.townyorigin"
@@ -7,8 +11,16 @@ version = "1.0.0"
 description = "Records the origin of players, powered by LuckPerms"
 
 dependencies {
-    // We use LuckPerms Metadata System to store the origin of players
-    compileOnly("net.luckperms", "api", "5.4")
+    // server api
+    compileOnly(libs.server.paper)
+
+    // my own libs
+    compileOnly(libs.mewcore)
+
+    // plugin libs
+    compileOnly(libs.towny)
+    compileOnly(libs.helper) { isTransitive = false }
+    compileOnly(libs.luckperms) // we use LuckPerms Metadata System to store the origin of players
 }
 
 tasks {
@@ -36,4 +48,8 @@ tasks {
         dependsOn(build)
         finalizedBy(named("deployJar"))
     }
+}
+
+indra {
+    javaVersions().target(17)
 }

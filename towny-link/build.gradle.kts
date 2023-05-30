@@ -1,5 +1,9 @@
 plugins {
-    id("cc.mewcraft.common")
+    val mewcraftVersion = "1.0.0"
+    id("cc.mewcraft.java-conventions") version mewcraftVersion
+    id("cc.mewcraft.repository-conventions") version mewcraftVersion
+    id("cc.mewcraft.project-conventions")
+    alias(libs.plugins.indra)
 }
 
 group = "cc.mewcraft.townylink"
@@ -7,8 +11,16 @@ version = "1.1.0"
 description = "Sync Towny data between your server network"
 
 dependencies {
-    compileOnly("com.google.inject", "guice", "5.1.0")
-    compileOnly("de.themoep.connectorplugin", "bukkit", "1.5-SNAPSHOT")
+    // server api
+    compileOnly(libs.server.paper)
+
+    // my own libs
+    compileOnly(libs.mewcore)
+
+    // plugin libs
+    compileOnly(libs.towny)
+    compileOnly(libs.helper) { isTransitive = false }
+    compileOnly(libs.connector.bukkit)
 }
 
 tasks {
@@ -36,5 +48,6 @@ tasks {
     }
 }
 
-fun lastCommitHash(): String = indraGit.commit()?.name?.substring(0, 7) ?: error("Could not determine commit hash")
-fun String.decorateVersion(): String = if (endsWith("-dev")) "$this+${lastCommitHash()}" else this
+indra {
+    javaVersions().target(17)
+}

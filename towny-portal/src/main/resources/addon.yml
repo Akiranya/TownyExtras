@@ -1,7 +1,7 @@
-name: ${name}
+name: TownyPortal
 version: ${version}
-main: ${mainClass}
 description: ${description}
+main: cc.mewcraft.townyportal.TownyPortal
 
 authors: [ Nailm ]
 depend: [ MaskedGUI ]

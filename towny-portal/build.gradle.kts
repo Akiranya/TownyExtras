@@ -1,6 +1,10 @@
 plugins {
-    id("cc.mewcraft.common")
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+    val mewcraftVersion = "1.0.0"
+    id("cc.mewcraft.java-conventions") version mewcraftVersion
+    id("cc.mewcraft.repository-conventions") version mewcraftVersion
+    id("cc.mewcraft.project-conventions")
+    alias(libs.plugins.shadow)
+    alias(libs.plugins.indra)
 }
 
 group = "cc.mewcraft.townyportal"
@@ -15,12 +19,14 @@ repositories {
 }
 
 dependencies {
+    compileOnly(libs.server.paper)
+    compileOnly(libs.towny)
     compileOnly("me.hsgamer", "bettergui", "8.3", classifier = "shaded")
     compileOnly("me.hsgamer.bettergui", "MaskedGUI", "2.2-SNAPSHOT")
-    // compileOnly("me.hsgamer", "hscore-minecraft-gui-advanced", "4.2.7") {
-    //     exclude("me.hsgamer", "hscore-ui")
-    //     exclude("me.hsgamer", "hscore-minecraft-gui")
-    // }
+    /*compileOnly("me.hsgamer", "hscore-minecraft-gui-advanced", "4.2.7") {
+        exclude("me.hsgamer", "hscore-ui")
+        exclude("me.hsgamer", "hscore-minecraft-gui")
+    }*/
 }
 
 tasks {
@@ -38,19 +44,13 @@ tasks {
         relocate("org.bstats", "me.hsgamer.bettergui.lib.bstats")
     }
     processResources {
-        filesMatching("addon.yml") {
-            filter { string ->
-                var result = string
+        filesMatching("**/addon.yml") {
+            expand(
                 mapOf(
-                    "name" to "TownyPortal",
                     "version" to "${project.version}",
-                    "mainClass" to "cc.mewcraft.townyportal.TownyPortal",
                     "description" to project.description
-                ).forEach { (key, value) ->
-                    result = result.replace("\${$key}", value.toString())
-                }
-                result
-            }
+                )
+            )
         }
     }
     register("deployJar") {
@@ -66,5 +66,6 @@ tasks {
     }
 }
 
-fun lastCommitHash(): String = indraGit.commit()?.name?.substring(0, 7) ?: error("Could not determine commit hash")
-fun String.decorateVersion(): String = if (endsWith("-dev")) "$this+${lastCommitHash()}" else this
+indra {
+    javaVersions().target(17)
+}
