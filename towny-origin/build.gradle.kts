@@ -20,7 +20,9 @@ dependencies {
     // plugin libs
     compileOnly(libs.towny)
     compileOnly(libs.helper) { isTransitive = false }
-    compileOnly(libs.luckperms) // we use LuckPerms Metadata System to store the origin of players
+    compileOnly(libs.luckperms) // we use LuckPerms Metadata System to store the server-origin of players
+    compileOnly(libs.papi)
+    compileOnly(libs.minipapi)
 }
 
 tasks {
