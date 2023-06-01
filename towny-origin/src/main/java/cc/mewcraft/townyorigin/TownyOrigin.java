@@ -1,6 +1,9 @@
 package cc.mewcraft.townyorigin;
 
 import cc.mewcraft.mewcore.message.Translations;
+import cc.mewcraft.townyorigin.listener.PlayerListener;
+import cc.mewcraft.townyorigin.listener.TownyListener;
+import cc.mewcraft.townyorigin.placeholder.MiniPlaceholderExpansion;
 import me.lucko.helper.plugin.ExtendedJavaPlugin;
 
 public class TownyOrigin extends ExtendedJavaPlugin {
@@ -15,6 +18,7 @@ public class TownyOrigin extends ExtendedJavaPlugin {
 
         // Register listeners
         registerListener(new PlayerListener(this)).bindWith(this);
+        registerListener(new TownyListener(this)).bindWith(this);
     }
 
     public Translations getLang() {

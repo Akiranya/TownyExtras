@@ -1,5 +1,7 @@
-package cc.mewcraft.townyorigin;
+package cc.mewcraft.townyorigin.placeholder;
 
+import cc.mewcraft.townyorigin.Constants;
+import cc.mewcraft.townyorigin.TownyOrigin;
 import io.github.miniplaceholders.api.Expansion;
 import me.lucko.helper.terminable.Terminable;
 import net.kyori.adventure.text.minimessage.tag.Tag;
@@ -40,6 +42,8 @@ public class MiniPlaceholderExpansion implements Terminable {
             })
 
             .build();
+
+        this.expansion.register();
 
         return this;
     }

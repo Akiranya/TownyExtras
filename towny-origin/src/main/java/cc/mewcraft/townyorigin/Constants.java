@@ -1,6 +1,6 @@
 package cc.mewcraft.townyorigin;
 
-public class Constants {
+public final class Constants {
 
     public static final String SERVER_ID_KEY = "server-id";
     public static final String SERVER_NAME_KEY = "server-name";
