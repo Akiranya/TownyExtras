@@ -50,6 +50,10 @@ public class PlayerListener implements AutoCloseableListener {
         this.serverNameSupplier = () -> luckPerms.getContextManager().getStaticContext().getAnyValue(Constants.SERVER_NAME_KEY);
         this.serverOriginIdCreator = () -> serverIdSupplier.get().map(id -> MetaNode.builder(Constants.SERVER_ORIGIN_ID_KEY, id).build());
         this.serverOriginNameCreator = () -> serverNameSupplier.get().map(id -> MetaNode.builder(Constants.SERVER_ORIGIN_NAME_KEY, id).build());
+
+        if (plugin.getServer().getPluginManager().getPlugin("Towny") == null) {
+            plugin.getSLF4JLogger().warn("Towny is not installed on this server!");
+        }
     }
 
     @EventHandler
