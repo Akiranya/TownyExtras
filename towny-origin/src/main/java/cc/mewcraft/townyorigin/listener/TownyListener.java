@@ -37,7 +37,7 @@ public class TownyListener implements AutoCloseableListener {
             Resident resident = Objects.requireNonNull(event.getResident());
             User user = luckPerms.getUserManager().getUser(resident.getUUID());
             if (user == null) {
-                return; // User not found - usually because of fake player
+                return; // User not found - usually because of the player is NPC
             }
 
             boolean hasOrigin = user.getCachedData().getMetaData().getMetaValue(Constants.SERVER_ORIGIN_ID_KEY) != null;
@@ -45,8 +45,8 @@ public class TownyListener implements AutoCloseableListener {
                 return; // The player already has server-origin set
             }
 
-            Suppliers.serverOriginIdCreator.get().ifPresent(node -> user.data().add(node)); // Add meta data of server-origin-id
-            Suppliers.serverOriginNameCreator.get().ifPresent(node -> user.data().add(node)); // Add meta data of server-origin-name
+            Suppliers.serverOriginIdCreator.get().ifPresent(user.data()::add); // Add meta data of server-origin-id
+            Suppliers.serverOriginNameCreator.get().ifPresent(user.data()::add); // Add meta data of server-origin-name
 
             luckPerms.getUserManager().saveUser(user);
         });
